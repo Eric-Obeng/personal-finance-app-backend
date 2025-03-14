@@ -17,17 +17,22 @@ interface IUser extends Document {
   getResetPasswordToken(): string;
 }
 
-const UserSchema: Schema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },
-  isEmailVerified: { type: Boolean, default: false },
-  emailVerificationToken: String,
-  emailVerificationTokenExpires: Date,
-  resetPasswordToken: String,
-  resetPasswordTokenExpires: Date,
-});
+const UserSchema: Schema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+    isEmailVerified: { type: Boolean, default: false },
+    emailVerificationToken: String,
+    emailVerificationTokenExpires: Date,
+    resetPasswordToken: String,
+    resetPasswordTokenExpires: Date,
+  },
+  {
+    collection: "users", // Ensure the collection name is 'users'
+  }
+);
 
 UserSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) return next();
