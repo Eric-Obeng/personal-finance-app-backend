@@ -14,7 +14,7 @@ const generateToken = (user: Document): string => {
     throw new Error("JWT_SECRET environment variable is not defined");
   }
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: '1h',
+    expiresIn: "1h",
   });
 };
 
@@ -34,9 +34,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
     const verificationToken = user.getVerificationToken();
     await user.save();
 
-    const verificationUrl = `${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/auth/verify-email/${verificationToken}`;
+    const verificationUrl = `${process.env.HOSTED_BACKEND}/api/v1/auth/verify-email/${verificationToken}`;
 
     const message = `Please verify your email by clicking on the following link: \n\n ${verificationUrl}`;
 
@@ -142,9 +140,7 @@ export const forgotPassword = async (
     const resetToken = user.getResetPasswordToken();
     await user.save();
 
-    const resetUrl = `${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/auth/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.HOSTED_BACKEND}/api/v1/auth/reset-password/${resetToken}`;
 
     const message = `You are receiving this email because you (or someone else) have requested the reset of a password. Please click on the following link to reset your password: \n\n ${resetUrl}`;
 
