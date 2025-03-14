@@ -5,10 +5,7 @@ const uri: string =
 
 export const connectDB = async (): Promise<void> => {
   try {
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    } as any);
+    await mongoose.connect(uri);
     console.log("MongoDB Connected using Mongoose");
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
