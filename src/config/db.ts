@@ -1,14 +1,13 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
 
-const uri: string =
-  "mongodb+srv://obengeric:obengeric1@personal-finance-app.r1q51.mongodb.net/personal-finance-app?retryWrites=true&w=majority&appName=personal-finance-app";
+dotenv.config();
+
+const uri: string = process.env.MONGO_URI || "";
 
 export const connectDB = async (): Promise<void> => {
   try {
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    } as any);
+    await mongoose.connect(uri);
     console.log("MongoDB Connected using Mongoose");
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
