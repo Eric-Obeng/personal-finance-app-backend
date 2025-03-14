@@ -6,6 +6,7 @@ import {
   verifyEmail,
   forgotPassword,
   resetPassword,
+  getAllUsers,
 } from "../controllers/authController";
 import { protect } from "../middleware/authMiddleware";
 
@@ -17,5 +18,6 @@ userRoute.get("/profile", protect, getProfile);
 userRoute.get("/verify-email/:token", verifyEmail);
 userRoute.post("/forgot-password", forgotPassword);
 userRoute.post("/reset-password/:token", resetPassword);
+userRoute.get("/users", getAllUsers);
 
 export default userRoute;

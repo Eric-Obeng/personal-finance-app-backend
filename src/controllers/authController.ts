@@ -14,7 +14,7 @@ const generateToken = (user: Document): string => {
     throw new Error("JWT_SECRET environment variable is not defined");
   }
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: '1h',
+    expiresIn: "1h",
   });
 };
 
@@ -29,14 +29,11 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    user = await User.create({ name, email, password });
-
+    user = new User({ name, email, password });
     const verificationToken = user.getVerificationToken();
     await user.save();
 
-    const verificationUrl = `${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/auth/verify-email/${verificationToken}`;
+    const verificationUrl = `${process.env.HOSTED_BACKEND}/api/v1/auth/verify-email/${verificationToken}`;
 
     const message = `Please verify your email by clicking on the following link: \n\n ${verificationUrl}`;
 
@@ -80,7 +77,10 @@ export const verifyEmail = async (
     user.emailVerificationTokenExpires = undefined;
     await user.save();
 
-    res.status(200).json({ message: "Email verified successfully" });
+    res.send(`
+      <h1>Email Verified Successfully</h1>
+      <p>Your email has been verified successfully. You can now <a href="https://your-frontend-url.com/login">login</a>.</p>
+    `);
   } catch (error) {
     console.error("Error during email verification:", error); // Add detailed error logging
     res.status(500).json({ message: "Server error" });
@@ -142,9 +142,7 @@ export const forgotPassword = async (
     const resetToken = user.getResetPasswordToken();
     await user.save();
 
-    const resetUrl = `${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/auth/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.HOSTED_BACKEND}/api/v1/auth/reset-password/${resetToken}`;
 
     const message = `You are receiving this email because you (or someone else) have requested the reset of a password. Please click on the following link to reset your password: \n\n ${resetUrl}`;
 
@@ -189,6 +187,20 @@ export const resetPassword = async (
     res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
     console.error("Error during password reset:", error); // Add detailed error logging
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get All Users
+export const getAllUsers = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const users = await User.find().select("-password");
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error); // Add detailed error logging
     res.status(500).json({ message: "Server error" });
   }
 };
