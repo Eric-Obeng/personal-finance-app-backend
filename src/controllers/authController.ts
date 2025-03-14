@@ -14,7 +14,7 @@ const generateToken = (user: Document): string => {
     throw new Error("JWT_SECRET environment variable is not defined");
   }
   return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: 3600000,
+    expiresIn: '1h',
   });
 };
 
