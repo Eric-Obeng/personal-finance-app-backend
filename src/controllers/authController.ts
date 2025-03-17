@@ -79,7 +79,7 @@ export const verifyEmail = async (
 
     res.send(`
       <h1>Email Verified Successfully</h1>
-      <p>Your email has been verified successfully. You can now <a href="https://v0-recreate-figma-design-3dv9op.vercel.app/login">login</a>.</p>
+      <p>Your email has been verified successfully. You can now <a href="${process.env.LOGIN_URL}">login</a>.</p>
     `);
   } catch (error) {
     console.error("Error during email verification:", error); // Add detailed error logging
