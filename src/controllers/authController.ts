@@ -79,7 +79,7 @@ export const verifyEmail = async (
 
     res.send(`
       <h1>Email Verified Successfully</h1>
-      <p>Your email has been verified successfully. You can now <a href="https://your-frontend-url.com/login">login</a>.</p>
+      <p>Your email has been verified successfully. You can now <a href="${process.env.LOGIN_URL}">login</a>.</p>
     `);
   } catch (error) {
     console.error("Error during email verification:", error); // Add detailed error logging
@@ -104,7 +104,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     const token = generateToken(user);
-    res.status(200).json({ token });
+    res.status(200).json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        isEmailVerified: user.isEmailVerified,
+        name: user.name,
+      },
+    });
   } catch (error) {
     console.error("Error during user login:", error); // Add detailed error logging
     res.status(500).json({ message: "Server error" });
