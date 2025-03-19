@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: ["http://localhost:3000", "https://finance-ai-app-rho.vercel.app"],
     credentials: true,
   })
 );
