@@ -15,6 +15,9 @@ dotenv.config();
 export const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Set security headers
+app.use(helmet());
 app.use(morgan("dev"));
 app.use(
   cors({
@@ -41,7 +44,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next(createError(404));
 });
 
-// Set security headers
-app.use(helmet());
+// Removed redundant helmet middleware application
 
 app.use(errorHandler);
