@@ -7,7 +7,6 @@ A robust, secure, and scalable RESTful API for managing personal finances. This 
 - [Features](#features)
 - [Technologies](#technologies)
 - [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
 - [Security](#security)
 - [Testing](#testing)
 - [Roadmap](#roadmap)
