@@ -14,12 +14,20 @@ import {
   validateTransactionUpdate,
 } from "../middleware/validationMiddleware";
 import multer from "multer";
+import {
+  validateBudgetOwnership,
+  checkBudgetLimit,
+  budgetLimiter,
+} from "../middleware/budgetMiddleware";
 
 const transactionRouter: Router = express.Router();
 const upload = multer({ dest: "public/uploads/avatars/" });
 
 // All transaction routes require authentication
 transactionRouter.use(protect);
+
+// Apply rate limiting and budget validation to transaction routes
+transactionRouter.use(budgetLimiter);
 
 // Upload transaction avatar
 transactionRouter.post(
@@ -28,15 +36,30 @@ transactionRouter.post(
   uploadTransactionAvatar
 );
 
-// Create transaction
-transactionRouter.post("/", validateTransaction, createTransaction);
+// Create transaction with budget validation
+transactionRouter.post(
+  "/",
+  validateTransaction,
+  validateBudgetOwnership,
+  checkBudgetLimit,
+  createTransaction
+);
 
 // Get all transactions with filtering and pagination
 transactionRouter.get("/", getAllTransactions);
 
 // Get, update, delete transaction by ID
 transactionRouter.get("/:id", getTransaction);
-transactionRouter.put("/:id", validateTransactionUpdate, updateTransaction);
+
+// Update transaction with budget validation
+transactionRouter.put(
+  "/:id",
+  validateTransactionUpdate,
+  validateBudgetOwnership,
+  checkBudgetLimit,
+  updateTransaction
+);
+
 transactionRouter.delete("/:id", deleteTransaction);
 
 // Restore a soft-deleted transaction
