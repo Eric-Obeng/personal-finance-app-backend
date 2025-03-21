@@ -81,7 +81,7 @@ class TransactionService {
       recurring,
     } = filters;
 
-    const { page = 1, limit = 10, sort = { date: -1 } } = paginationOptions;
+    const { page = 0, limit = 10, sort = { date: -1 } } = paginationOptions;
 
     // Build query
     const query: any = { userId, isDeleted: false };
@@ -143,7 +143,7 @@ class TransactionService {
     }
 
     // Execute query
-    const skip = (page - 1) * limit;
+    const skip = page * limit;
 
     const [transactions, total] = await Promise.all([
       Transaction.find(query).sort(sort).skip(skip).limit(limit).lean(),
