@@ -6,6 +6,7 @@ import cors from "cors";
 import path from "path";
 import userRoute from "./src/routes/authRoutes";
 import transactionRoute from "./src/routes/transactionRoutes";
+import budgetRoute from "./src/routes/budgetRoutes";
 import { errorHandler } from "./src/middleware/errorHandler";
 import recurringTransactionWorker from "./src/workers/recurringTransactionWorker";
 import helmet from "helmet";
@@ -32,6 +33,7 @@ app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 // Routes
 app.use("/api/v1/auth", userRoute);
 app.use("/api/v1/transactions", transactionRoute);
+app.use("/api/v1/budgets", budgetRoute);
 
 app.get("/", async (req: Request, res: Response, next: NextFunction) => {
   res.send({ message: "Awesome it works 🐻" });
