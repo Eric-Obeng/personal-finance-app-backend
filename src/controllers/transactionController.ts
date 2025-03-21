@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import transactionService from "../services/transaction.service";
+import budgetService from "../services/budget.service";
 import {
   CreateTransactionDto,
   UpdateTransactionDto,
@@ -82,6 +83,23 @@ export const createTransaction = async (
       userId,
       transactionData
     );
+
+    // Notify if budget is near limit
+    if (transaction.budgetId && transaction.type === "expense") {
+      const utilization = await budgetService.getBudgetUtilization(
+        userId,
+        transaction.budgetId
+      );
+      const percentageUsed =
+        (utilization.spent / utilization.budget.amount) * 100;
+
+      if (percentageUsed >= 80) {
+        // You could implement actual notifications here
+        console.log(
+          `Budget ${utilization.budget.category} is at ${percentageUsed}% utilization`
+        );
+      }
+    }
 
     res.status(201).json({ transaction });
   } catch (error) {
@@ -182,9 +200,9 @@ export const getAllTransactions = async (
       filters.recurring = req.query.recurring === "true";
     }
 
-    // Pagination
-    if (req.query.page) {
-      paginationOptions.page = parseInt(req.query.page as string);
+    // Pagination starting from 0
+    if (req.query.page !== undefined) {
+      paginationOptions.page = Math.max(0, parseInt(req.query.page as string));
     }
     if (req.query.limit) {
       paginationOptions.limit = parseInt(req.query.limit as string);
