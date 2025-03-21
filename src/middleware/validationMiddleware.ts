@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import Joi from "joi";
+import Joi, { ValidationError } from "joi";
 import {
   TransactionType,
   RecurringFrequency,
@@ -7,7 +7,6 @@ import {
 
 // Transaction validation schema
 const transactionSchema = Joi.object({
-  name: Joi.string().required().trim().max(100),
   amount: Joi.number().required().min(0),
   type: Joi.string().valid("income", "expense").required(),
   category: Joi.string().required().trim().max(50),
@@ -38,7 +37,7 @@ export const validateTransaction = (
 
   if (error) {
     const errorMessage = error.details
-      .map((detail) => detail.message)
+      .map((detail: Joi.ValidationErrorItem) => detail.message)
       .join(", ");
     res.status(400).json({ message: "Validation error", errors: errorMessage });
     return;
@@ -49,7 +48,6 @@ export const validateTransaction = (
 
 // Validation schema for transaction update
 const updateTransactionSchema = Joi.object({
-  name: Joi.string().optional().trim().max(100),
   amount: Joi.number().optional().min(0),
   type: Joi.string().valid("income", "expense").optional(),
   category: Joi.string().optional().trim().max(50),
@@ -81,7 +79,73 @@ export const validateTransactionUpdate = (
 
   if (error) {
     const errorMessage = error.details
-      .map((detail) => detail.message)
+      .map((detail: Joi.ValidationErrorItem) => detail.message)
+      .join(", ");
+    res.status(400).json({ message: "Validation error", errors: errorMessage });
+    return;
+  }
+
+  next();
+};
+
+// Budget validation schema
+const budgetSchema = Joi.object({
+  category: Joi.string().required().trim().max(50),
+  amount: Joi.number().required().min(0),
+  theme: Joi.string()
+    .pattern(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
+    .default("#000000"),
+  period: Joi.string()
+    .valid("monthly", "quarterly", "yearly")
+    .default("monthly"),
+  startDate: Joi.date().default(Date.now),
+  isActive: Joi.boolean().default(true),
+  metadata: Joi.object().optional(),
+});
+
+// Budget update validation schema
+const updateBudgetSchema = Joi.object({
+  category: Joi.string().trim().max(50),
+  amount: Joi.number().min(0),
+  theme: Joi.string().pattern(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/),
+  period: Joi.string().valid("monthly", "quarterly", "yearly"),
+  startDate: Joi.date(),
+  isActive: Joi.boolean(),
+  metadata: Joi.object(),
+}).min(1); // At least one field must be provided for update
+
+// Validation middleware for budgets
+export const validateBudget = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const { error } = budgetSchema.validate(req.body, { abortEarly: false });
+
+  if (error) {
+    const errorMessage = error.details
+      .map((detail: Joi.ValidationErrorItem) => detail.message)
+      .join(", ");
+    res.status(400).json({ message: "Validation error", errors: errorMessage });
+    return;
+  }
+
+  next();
+};
+
+// Validation middleware for budget updates
+export const validateBudgetUpdate = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const { error } = updateBudgetSchema.validate(req.body, {
+    abortEarly: false,
+  });
+
+  if (error) {
+    const errorMessage = error.details
+      .map((detail: Joi.ValidationErrorItem) => detail.message)
       .join(", ");
     res.status(400).json({ message: "Validation error", errors: errorMessage });
     return;
