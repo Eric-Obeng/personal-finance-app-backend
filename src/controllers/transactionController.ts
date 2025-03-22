@@ -200,12 +200,17 @@ export const getAllTransactions = async (
       filters.recurring = req.query.recurring === "true";
     }
 
-    // Pagination starting from 0
+    // Pagination starting from 1
     if (req.query.page !== undefined) {
-      paginationOptions.page = Math.max(0, parseInt(req.query.page as string));
+      paginationOptions.page = Math.max(1, parseInt(req.query.page as string));
     }
     if (req.query.limit) {
       paginationOptions.limit = parseInt(req.query.limit as string);
+    }
+
+    // Calculate skip value for pagination
+    if (paginationOptions.page && paginationOptions.limit) {
+      paginationOptions.skip = (paginationOptions.page - 1) * paginationOptions.limit;
     }
 
     // Sorting

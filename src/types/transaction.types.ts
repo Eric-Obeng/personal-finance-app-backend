@@ -1,5 +1,5 @@
-export type TransactionType = 'income' | 'expense';
-export type RecurringFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly';
+export type TransactionType = "income" | "expense";
+export type RecurringFrequency = "daily" | "weekly" | "monthly" | "yearly";
 
 export interface CreateTransactionDto {
   name: string;
@@ -50,6 +50,7 @@ export interface TransactionFilters {
 export interface PaginationOptions {
   page?: number;
   limit?: number;
+  skip?: number;
   sort?: Record<string, 1 | -1>;
 }
 
@@ -80,4 +81,4 @@ export interface PaginatedTransactionsResponse {
   page: number;
   limit: number;
   totalPages: number;
-} 
+}
