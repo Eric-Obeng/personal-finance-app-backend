@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import transactionService from "../services/transaction.service";
 import budgetService from "../services/budget.service";
+import notificationService from "../services/notification.service";
 import {
   CreateTransactionDto,
   UpdateTransactionDto,
@@ -94,10 +95,13 @@ export const createTransaction = async (
         (utilization.spent / utilization.budget.amount) * 100;
 
       if (percentageUsed >= 80) {
-        // You could implement actual notifications here
-        console.log(
-          `Budget ${utilization.budget.category} is at ${percentageUsed}% utilization`
-        );
+        // Notify the user about high budget utilization
+        await notificationService.notifyUser(userId, {
+          message: `Budget ${utilization.budget.category} is at ${percentageUsed.toFixed(1)}% utilization`,
+          type: "warning",
+          relatedId: transaction.budgetId,
+          category: "budget",
+        });
       }
     }
 
@@ -210,7 +214,8 @@ export const getAllTransactions = async (
 
     // Calculate skip value for pagination
     if (paginationOptions.page && paginationOptions.limit) {
-      paginationOptions.skip = (paginationOptions.page - 1) * paginationOptions.limit;
+      paginationOptions.skip =
+        (paginationOptions.page - 1) * paginationOptions.limit;
     }
 
     // Sorting
