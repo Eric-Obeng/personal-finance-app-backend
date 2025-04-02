@@ -59,7 +59,8 @@ export const getPots = async (
       return;
     }
 
-    const pots = await potService.getPots(userId, req.query);
+    // Pass only the userId to the getPots method
+    const pots = await potService.getPots(userId);
     res.status(200).json({ pots });
   } catch (error) {
     console.error("Error getting pots:", error);

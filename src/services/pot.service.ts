@@ -14,7 +14,8 @@ class PotService {
       ...doc,
       _id: doc._id.toString(),
       userId: doc.userId.toString(),
-      progress: doc.goalAmount > 0 ? (doc.currentAmount / doc.goalAmount) * 100 : 0,
+      progress:
+        doc.goalAmount > 0 ? (doc.currentAmount / doc.goalAmount) * 100 : 0,
     };
   }
 
@@ -48,38 +49,8 @@ class PotService {
     return pot ? this.transformPot(pot) : null;
   }
 
-  async getPots(
-    userId: string,
-    filters: PotFilters = {}
-  ): Promise<PotResponse[]> {
-    const query: any = { userId: new mongoose.Types.ObjectId(userId) };
-
-    if (filters.search) {
-      query.$or = [
-        { name: { $regex: filters.search, $options: "i" } },
-        { description: { $regex: filters.search, $options: "i" } },
-      ];
-    }
-
-    if (filters.category) {
-      query.category = filters.category;
-    }
-
-    if (filters.minGoalAmount || filters.maxGoalAmount) {
-      query.goalAmount = {};
-      if (filters.minGoalAmount) query.goalAmount.$gte = filters.minGoalAmount;
-      if (filters.maxGoalAmount) query.goalAmount.$lte = filters.maxGoalAmount;
-    }
-
-    if (filters.targetDateBefore || filters.targetDateAfter) {
-      query.targetDate = {};
-      if (filters.targetDateBefore)
-        query.targetDate.$lte = filters.targetDateBefore;
-      if (filters.targetDateAfter)
-        query.targetDate.$gte = filters.targetDateAfter;
-    }
-
-    const pots = await Pot.find(query).sort({ createdAt: -1 }).lean();
+  async getPots(userId: string): Promise<PotResponse[]> {
+    const pots = await Pot.find({ userId }).sort({ createdAt: -1 }).lean();
     return pots.map(this.transformPot);
   }
 
