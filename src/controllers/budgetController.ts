@@ -233,7 +233,7 @@ export const getBudgetsByCategory = async (
     const categories = category.split(",");
     const budgets = await budgetService.getBudgetsByCategory(
       userId,
-      categories
+      categories.join(",")
     );
 
     res.status(200).json({ budgets });
