@@ -7,6 +7,7 @@ import {
 
 // Transaction validation schema
 const transactionSchema = Joi.object({
+  name: Joi.string().required().trim().max(100), // Ensure name is required and has a max length
   amount: Joi.number().required().min(0),
   type: Joi.string().valid("income", "expense").required(),
   category: Joi.string().required().trim().max(50),
