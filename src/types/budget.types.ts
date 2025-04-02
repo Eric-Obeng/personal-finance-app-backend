@@ -55,6 +55,7 @@ export interface BudgetResponse {
   metadata?: Record<string, any>;
   createdAt: Date;
   updatedAt: Date;
+  spent: number; // Add the spent property
 }
 
 export interface PaginatedBudgetsResponse {

@@ -14,12 +14,13 @@ class BudgetService {
   /**
    * Transform budget document to response object
    */
-  private transformBudget(budget: any): BudgetResponse {
+  private transformBudget(budget: any, spent: number = 0): BudgetResponse {
     const doc = budget.toObject ? budget.toObject() : budget;
     return {
       ...doc,
       _id: doc._id.toString(),
       userId: doc.userId.toString(),
+      spent, // Include the spent property
     };
   }
 
@@ -100,8 +101,27 @@ class BudgetService {
       Budget.countDocuments(query),
     ]);
 
+    const budgetsWithSpent = await Promise.all(
+      budgets.map(async (budget) => {
+        const transactions = await Transaction.aggregate([
+          {
+            $match: {
+              userId: budget.userId,
+              budgetId: budget._id,
+              type: "expense",
+              isDeleted: false,
+            },
+          },
+          { $group: { _id: null, total: { $sum: "$amount" } } },
+        ]);
+
+        const spent = transactions[0]?.total || 0;
+        return this.transformBudget(budget, spent); // Pass spent to transformBudget
+      })
+    );
+
     return {
-      budgets: budgets.map(this.transformBudget),
+      budgets: budgetsWithSpent,
       total,
       page,
       limit,
@@ -155,7 +175,7 @@ class BudgetService {
     const spent = transactions[0]?.total || 0;
     const remaining = Math.max(0, budget.amount - spent);
 
-    return { budget: this.transformBudget(budget), spent, remaining };
+    return { budget: this.transformBudget(budget, spent), spent, remaining };
   }
 
   /**
@@ -186,7 +206,11 @@ class BudgetService {
         );
         const percentageUsed = (spent / budget.amount) * 100;
         return percentageUsed >= threshold
-          ? { budget: this.transformBudget(budget), spent, percentageUsed }
+          ? {
+              budget: this.transformBudget(budget, spent),
+              spent,
+              percentageUsed,
+            }
           : null;
       })
     );
