@@ -42,6 +42,40 @@ After successful login, copy the token and set it to your environment variable:
 pm.environment.set("token", pm.response.json().token);
 ```
 
+### 3. Get User Profile
+
+- **GET** `{{base_url}}/api/v1/auth/profile`
+
+### 4. Forgot Password
+
+- **POST** `{{base_url}}/api/v1/auth/forgot-password`
+
+```json
+{
+  "email": "test@example.com"
+}
+```
+
+### 5. Reset Password
+
+- **POST** `{{base_url}}/api/v1/auth/reset-password/:token`
+
+```json
+{
+  "password": "NewPassword@123"
+}
+```
+
+### 6. Verify Email
+
+- **GET** `{{base_url}}/api/v1/auth/verify-email/:token`
+
+### 7. Get All Users
+
+- **GET** `{{base_url}}/api/v1/auth/users`
+
+---
+
 ## Transaction Endpoints
 
 Add this authorization header to all requests:
@@ -117,6 +151,29 @@ Query Parameters:
 avatar: [Select File]
 ```
 
+### 8. Get Transaction Overview
+
+- **GET** `{{base_url}}/api/v1/transactions/overview`
+
+Query Parameters:
+
+```
+?limit=5
+&sort=latest
+```
+
+### 9. Get Transaction Analytics
+
+- **GET** `{{base_url}}/api/v1/transactions/analytics`
+
+Query Parameters:
+
+```
+?dateRange=last30days
+```
+
+---
+
 ## Budget Endpoints
 
 ### 1. Create Budget
@@ -176,6 +233,8 @@ Query Parameters:
 
 - **GET** `{{base_url}}/api/v1/budgets/:id/utilization`
 
+---
+
 ## Savings Pot Endpoints
 
 ### 1. Create Savings Pot
@@ -185,8 +244,10 @@ Query Parameters:
 ```json
 {
   "name": "New Car",
+  "currentAmount": 1000,
   "goalAmount": 5000,
   "targetDate": "2024-12-31T00:00:00Z",
+  "theme": "#FF5733",
   "description": "Saving for a new car",
   "category": "Vehicle"
 }
@@ -234,49 +295,58 @@ Query Parameters:
 
 ```json
 {
-  "amount": 500 // Positive for adding, negative for withdrawing
+  "amount": 500,
+  "operation": "add" // or "withdraw"
 }
 ```
 
-Example Success Responses:
+---
 
-Create/Update:
+## Notification Endpoints
 
-```json
-{
-  "success": true,
-  "message": "Pot created/updated successfully",
-  "data": {
-    "_id": "pot_id",
-    "name": "New Car",
-    "goalAmount": 5000,
-    "currentAmount": 0,
-    "targetDate": "2024-12-31T00:00:00Z",
-    "description": "Saving for a new car",
-    "category": "Vehicle",
-    "progress": 0,
-    "createdAt": "2024-03-20T10:00:00Z",
-    "updatedAt": "2024-03-20T10:00:00Z"
-  }
-}
+### 1. Get All Notifications
+
+- **GET** `{{base_url}}/api/v1/notifications`
+
+Query Parameters:
+
+```
+?limit=20
 ```
 
-Get All:
+### 2. Mark Notification as Read
 
-```json
-{
-  "pots": [
-    {
-      "_id": "pot_id",
-      "name": "New Car",
-      "goalAmount": 5000,
-      "currentAmount": 1000,
-      "progress": 20
-      // ...other fields
-    }
-  ]
-}
-```
+- **PATCH** `{{base_url}}/api/v1/notifications/:id/read`
+
+### 3. Mark All Notifications as Read
+
+- **PATCH** `{{base_url}}/api/v1/notifications/read-all`
+
+---
+
+## Recurring Bill Endpoints
+
+### 1. Get Recurring Bills Summary
+
+- **GET** `{{base_url}}/api/v1/recurring-bills/summary`
+
+---
+
+## Account Endpoints
+
+### 1. Get Account Summary
+
+- **GET** `{{base_url}}/api/v1/account/account-summary`
+
+### 2. Get Savings Pots Overview
+
+- **GET** `{{base_url}}/api/v1/account/savings-pots`
+
+### 3. Get Budget Overview
+
+- **GET** `{{base_url}}/api/v1/account/budgets`
+
+---
 
 ## Testing Flow
 
@@ -288,6 +358,7 @@ Get All:
 6. Update transactions and budgets
 7. Check budget utilization
 8. Test deletion and restoration
+9. Test recurring bills and notifications
 
 ## Common Response Codes
 

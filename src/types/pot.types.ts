@@ -2,6 +2,7 @@ export interface CreatePotDto {
   name: string;
   goalAmount: number;
   targetDate: Date;
+  theme: string;
   description?: string;
   category?: string;
   metadata?: Record<string, any>;
@@ -11,6 +12,7 @@ export interface UpdatePotDto {
   name?: string;
   goalAmount?: number;
   targetDate?: Date;
+  theme?: string;
   description?: string;
   category?: string;
   metadata?: Record<string, any>;
@@ -23,6 +25,7 @@ export interface PotResponse {
   goalAmount: number;
   currentAmount: number;
   targetDate: Date;
+  theme: string;
   description?: string;
   category?: string;
   progress: number;

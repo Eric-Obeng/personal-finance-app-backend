@@ -7,6 +7,7 @@ import {
 
 // Transaction validation schema
 const transactionSchema = Joi.object({
+  name: Joi.string().required().trim().max(100), // Ensure name is required and has a max length
   amount: Joi.number().required().min(0),
   type: Joi.string().valid("income", "expense").required(),
   category: Joi.string().required().trim().max(50),
@@ -157,8 +158,15 @@ export const validateBudgetUpdate = (
 // Pot validation schema
 const potSchema = Joi.object({
   name: Joi.string().required().trim().max(100),
+  currentAmount: Joi.number().optional().min(0),
   goalAmount: Joi.number().required().min(0),
   targetDate: Joi.date().required().greater("now"),
+  theme: Joi.string()
+    .pattern(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
+    .required()
+    .messages({
+      "string.pattern.base": "Theme must be a valid hex color code",
+    }),
   description: Joi.string().optional().allow("").max(500),
   category: Joi.string().optional().trim().max(50),
   metadata: Joi.object().optional(),
@@ -200,6 +208,34 @@ export const validatePotUpdate = (
   if (error) {
     res.status(400).json({
       message: "Validation error",
+      errors: error.details.map((detail) => detail.message),
+    });
+    return;
+  }
+  next();
+};
+
+// Pot balance validation schema
+const potBalanceSchema = Joi.object({
+  amount: Joi.number().required().greater(0).messages({
+    "number.greater": "Amount must be greater than 0",
+  }),
+  operation: Joi.string().required().valid("add", "withdraw").messages({
+    "any.only": 'Operation must be either "add" or "withdraw"',
+  }),
+});
+
+// Validation middleware for pot balance operations
+export const validatePotBalance = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const { error } = potBalanceSchema.validate(req.body, { abortEarly: false });
+  if (error) {
+    res.status(400).json({
+      success: false,
+      message: "Validation failed",
       errors: error.details.map((detail) => detail.message),
     });
     return;

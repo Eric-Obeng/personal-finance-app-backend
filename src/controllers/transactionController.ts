@@ -326,3 +326,119 @@ export const restoreTransaction = async (
     res.status(500).json({ message: "Failed to restore transaction" });
   }
 };
+
+// Get transaction overview
+export const getTransactionOverview = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const limit = parseInt(req.query.limit as string) || 5;
+    const sort: Record<string, 1 | -1> =
+      req.query.sort === "latest" ? { updatedAt: -1 } : { updatedAt: 1 };
+
+    // Fetch the last few transactions
+    const transactions = await transactionService.getTransactions(
+      userId,
+      {},
+      { limit, sort }
+    );
+
+    // Map the transactions to include only the required fields
+    const transactionOverview = transactions.transactions.map(
+      (transaction) => ({
+        name: transaction.name,
+        date: transaction.date,
+        amount: transaction.amount,
+        type: transaction.type,
+        category: transaction.category,
+        updatedAt: transaction.updatedAt,
+      })
+    );
+
+    res.status(200).json(transactionOverview);
+  } catch (error) {
+    console.error("Error fetching transaction overview:", error);
+    res.status(500).json({ message: "Failed to fetch transaction overview" });
+  }
+};
+
+// Get transaction analytics
+export const getTransactionAnalytics = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    const dateRange = req.query.dateRange || "last30days";
+    const now = new Date();
+    let startDate: Date;
+
+    // Determine the start date based on the date range
+    if (dateRange === "last30days") {
+      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    } else if (dateRange === "last7days") {
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    } else if (dateRange === "thisMonth") {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else {
+      res.status(400).json({ message: "Invalid date range" });
+      return;
+    }
+
+    // Fetch transactions within the date range
+    const transactions = await transactionService.getTransactions(userId, {
+      startDate,
+      endDate: now,
+    });
+
+    // Calculate transaction trends over time
+    const transactionTrends: { date: string; amount: number }[] = [];
+    const trendMap: Record<string, number> = {};
+
+    transactions.transactions.forEach((transaction) => {
+      const date = transaction.date.toISOString().split("T")[0];
+      trendMap[date] = (trendMap[date] || 0) + transaction.amount;
+    });
+
+    for (const [date, amount] of Object.entries(trendMap)) {
+      transactionTrends.push({ date, amount });
+    }
+
+    // Calculate category breakdown
+    const categoryMap: Record<string, number> = {};
+    let totalAmount = 0;
+
+    transactions.transactions.forEach((transaction) => {
+      categoryMap[transaction.category] =
+        (categoryMap[transaction.category] || 0) + transaction.amount;
+      totalAmount += transaction.amount;
+    });
+
+    const categoryBreakdown = Object.entries(categoryMap).map(
+      ([category, amount]) => ({
+        category,
+        percentage: Math.round((amount / totalAmount) * 100),
+      })
+    );
+
+    res.status(200).json({
+      transactionTrends,
+      categoryBreakdown,
+    });
+  } catch (error) {
+    console.error("Error fetching transaction analytics:", error);
+    res.status(500).json({ message: "Failed to fetch transaction analytics" });
+  }
+};

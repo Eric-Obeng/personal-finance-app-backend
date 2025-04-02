@@ -67,23 +67,8 @@ class TransactionService {
     filters: TransactionFilters = {},
     paginationOptions: PaginationOptions = {}
   ): Promise<PaginatedTransactionsResponse> {
-    const {
-      startDate,
-      endDate,
-      category,
-      type,
-      minAmount,
-      maxAmount,
-      search,
-      budgetId,
-      potId,
-      tags,
-      recurring,
-    } = filters;
+    const { startDate, endDate, ...otherFilters } = filters;
 
-    const { page = 1, limit = 10, sort = { date: -1 } } = paginationOptions;
-
-    // Build query
     const query: any = { userId, isDeleted: false };
 
     // Date range filter
@@ -93,56 +78,10 @@ class TransactionService {
       if (endDate) query.date.$lte = endDate;
     }
 
-    // Category filter
-    if (category) {
-      if (Array.isArray(category)) {
-        query.category = { $in: category };
-      } else {
-        query.category = category;
-      }
-    }
+    // Apply other filters
+    Object.assign(query, otherFilters);
 
-    // Type filter (income/expense)
-    if (type) {
-      query.type = type;
-    }
-
-    // Amount range filter
-    if (minAmount !== undefined || maxAmount !== undefined) {
-      query.amount = {};
-      if (minAmount !== undefined) query.amount.$gte = minAmount;
-      if (maxAmount !== undefined) query.amount.$lte = maxAmount;
-    }
-
-    // Search filter (name or description)
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    // Budget filter
-    if (budgetId) {
-      query.budgetId = budgetId;
-    }
-
-    // Pot filter
-    if (potId) {
-      query.potId = potId;
-    }
-
-    // Tags filter
-    if (tags && tags.length > 0) {
-      query.tags = { $in: tags };
-    }
-
-    // Recurring filter
-    if (recurring !== undefined) {
-      query.recurring = recurring;
-    }
-
-    // Execute query
+    const { page = 1, limit = 10, sort = { date: -1 } } = paginationOptions;
     const skip = (page - 1) * limit;
 
     const [transactions, total] = await Promise.all([
@@ -157,6 +96,24 @@ class TransactionService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  /**
+   * Get all transactions for a user
+   */
+  async getAllTransactions(userId: string): Promise<ITransaction[]> {
+    return Transaction.find({ userId, isDeleted: false }).lean();
+  }
+
+  /**
+   * Get all recurring transactions for a user
+   */
+  async getRecurringTransactions(userId: string): Promise<ITransaction[]> {
+    return Transaction.find({
+      userId,
+      recurring: true,
+      isDeleted: false,
+    }).lean();
   }
 
   /**

@@ -8,9 +8,11 @@ export interface IPot extends Document {
   targetDate: Date;
   description?: string;
   category?: string;
+  theme: string;
   metadata?: Record<string, any>;
   createdAt: Date;
   updatedAt: Date;
+  progress: number; // Changed from optional to required
 }
 
 const PotSchema: Schema = new mongoose.Schema(
@@ -47,6 +49,17 @@ const PotSchema: Schema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    theme: {
+      type: String,
+      required: true,
+      default: "#000000",
+      validate: {
+        validator: function (v: string) {
+          return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(v);
+        },
+        message: "Theme must be a valid hex color code",
+      },
+    },
     metadata: {
       type: Map,
       of: Schema.Types.Mixed,
@@ -55,8 +68,37 @@ const PotSchema: Schema = new mongoose.Schema(
   {
     timestamps: true,
     collection: "pots",
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+// Add virtual field for progress with proper typing
+PotSchema.virtual("progress").get(function (this: IPot) {
+  if (this.goalAmount === 0) {
+    return 0; // Default progress to 0 if goalAmount is zero
+  }
+  return Math.round((this.currentAmount / this.goalAmount) * 100);
+});
+
+// Pre-save middleware with proper typing
+PotSchema.pre<IPot>("save", function (next) {
+  if (this.currentAmount > this.goalAmount) {
+    this.currentAmount = this.goalAmount;
+  }
+  next();
+});
+
+// Pre-update middleware with proper typing
+PotSchema.pre("findOneAndUpdate", function (this: any, next) {
+  const update = this.getUpdate() as {
+    $set?: { currentAmount: number; goalAmount: number };
+  };
+  if (update.$set && update.$set.currentAmount > update.$set.goalAmount) {
+    update.$set.currentAmount = update.$set.goalAmount;
+  }
+  next();
+});
 
 // Indexes for frequent queries
 PotSchema.index({ userId: 1, name: 1 }, { unique: true });

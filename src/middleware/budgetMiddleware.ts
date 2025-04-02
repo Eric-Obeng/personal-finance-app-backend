@@ -23,9 +23,9 @@ export const validateBudgetOwnership = async (
     const userId = req.user?.id;
     const budgetId = req.body.budgetId || req.params.id;
 
+    // Skip validation if budgetId is not provided in the request body
     if (!budgetId) {
-      next();
-      return;
+      return next();
     }
 
     const budget = await budgetService.getBudgetById(userId!, budgetId);

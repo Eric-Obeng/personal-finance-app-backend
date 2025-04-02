@@ -7,6 +7,8 @@ import {
   deleteTransaction,
   restoreTransaction,
   uploadTransactionAvatar,
+  getTransactionOverview,
+  getTransactionAnalytics,
 } from "../controllers/transactionController";
 import { protect } from "../middleware/authMiddleware";
 import {
@@ -51,11 +53,17 @@ transactionRouter.get("/", getAllTransactions);
 // Get, update, delete transaction by ID
 transactionRouter.get("/:id", getTransaction);
 
+// Get transaction overview
+transactionRouter.get("/overview", getTransactionOverview);
+
+// Get transaction analytics
+transactionRouter.get("/analytics", getTransactionAnalytics);
+
 // Update transaction with budget validation
 transactionRouter.put(
   "/:id",
   validateTransactionUpdate,
-  validateBudgetOwnership,
+  validateBudgetOwnership, // Middleware ensures budgetId is validated only if provided
   checkBudgetLimit,
   updateTransaction
 );
