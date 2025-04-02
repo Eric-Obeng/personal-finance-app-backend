@@ -176,6 +176,108 @@ Query Parameters:
 
 - **GET** `{{base_url}}/api/v1/budgets/:id/utilization`
 
+## Savings Pot Endpoints
+
+### 1. Create Savings Pot
+
+- **POST** `{{base_url}}/api/v1/pots`
+
+```json
+{
+  "name": "New Car",
+  "goalAmount": 5000,
+  "targetDate": "2024-12-31T00:00:00Z",
+  "description": "Saving for a new car",
+  "category": "Vehicle"
+}
+```
+
+### 2. Get All Savings Pots
+
+- **GET** `{{base_url}}/api/v1/pots`
+
+Query Parameters:
+
+```
+?search=car
+&category=Vehicle
+&minGoalAmount=1000
+&maxGoalAmount=10000
+&targetDateBefore=2024-12-31
+&targetDateAfter=2024-01-01
+```
+
+### 3. Get Single Pot
+
+- **GET** `{{base_url}}/api/v1/pots/:id`
+
+### 4. Update Pot
+
+- **PUT** `{{base_url}}/api/v1/pots/:id`
+
+```json
+{
+  "name": "Updated Car Fund",
+  "goalAmount": 6000,
+  "targetDate": "2025-01-31T00:00:00Z",
+  "description": "Updated saving goal for a better car"
+}
+```
+
+### 5. Delete Pot
+
+- **DELETE** `{{base_url}}/api/v1/pots/:id`
+
+### 6. Update Pot Balance
+
+- **PATCH** `{{base_url}}/api/v1/pots/:id/balance`
+
+```json
+{
+  "amount": 500 // Positive for adding, negative for withdrawing
+}
+```
+
+Example Success Responses:
+
+Create/Update:
+
+```json
+{
+  "success": true,
+  "message": "Pot created/updated successfully",
+  "data": {
+    "_id": "pot_id",
+    "name": "New Car",
+    "goalAmount": 5000,
+    "currentAmount": 0,
+    "targetDate": "2024-12-31T00:00:00Z",
+    "description": "Saving for a new car",
+    "category": "Vehicle",
+    "progress": 0,
+    "createdAt": "2024-03-20T10:00:00Z",
+    "updatedAt": "2024-03-20T10:00:00Z"
+  }
+}
+```
+
+Get All:
+
+```json
+{
+  "pots": [
+    {
+      "_id": "pot_id",
+      "name": "New Car",
+      "goalAmount": 5000,
+      "currentAmount": 1000,
+      "progress": 20
+      // ...other fields
+    }
+  ]
+}
+```
+
 ## Testing Flow
 
 1. Register a new user

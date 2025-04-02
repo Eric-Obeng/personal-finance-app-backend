@@ -153,3 +153,56 @@ export const validateBudgetUpdate = (
 
   next();
 };
+
+// Pot validation schema
+const potSchema = Joi.object({
+  name: Joi.string().required().trim().max(100),
+  goalAmount: Joi.number().required().min(0),
+  targetDate: Joi.date().required().greater("now"),
+  description: Joi.string().optional().allow("").max(500),
+  category: Joi.string().optional().trim().max(50),
+  metadata: Joi.object().optional(),
+});
+
+const updatePotSchema = Joi.object({
+  name: Joi.string().trim().max(100),
+  goalAmount: Joi.number().min(0),
+  targetDate: Joi.date().greater("now"),
+  description: Joi.string().allow("").max(500),
+  category: Joi.string().trim().max(50),
+  metadata: Joi.object(),
+}).min(1); // At least one field must be provided for update
+
+// Validation middleware for pots
+export const validatePot = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const { error } = potSchema.validate(req.body, { abortEarly: false });
+  if (error) {
+    res.status(400).json({
+      message: "Validation error",
+      errors: error.details.map((detail) => detail.message),
+    });
+    return;
+  }
+  next();
+};
+
+// Validation middleware for pot updates
+export const validatePotUpdate = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const { error } = updatePotSchema.validate(req.body, { abortEarly: false });
+  if (error) {
+    res.status(400).json({
+      message: "Validation error",
+      errors: error.details.map((detail) => detail.message),
+    });
+    return;
+  }
+  next();
+};
