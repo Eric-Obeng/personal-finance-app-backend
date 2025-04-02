@@ -29,12 +29,12 @@ export const createPot = async (
     console.error("Error creating pot:", error);
 
     // Handle validation errors
-    if (error.message.includes("Validation error")) {
+    if (error.message.includes("Invalid pot data:")) {
       res.status(400).json({
         success: false,
         message: "Validation failed",
         errors: {
-          details: error.message.split("Validation error:")[1].trim(),
+          details: error.message.split("Invalid pot data:")[1].trim(),
         },
       });
       return;

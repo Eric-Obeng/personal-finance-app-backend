@@ -14,7 +14,7 @@ class PotService {
       ...doc,
       _id: doc._id.toString(),
       userId: doc.userId.toString(),
-      progress: (doc.currentAmount / doc.goalAmount) * 100,
+      progress: doc.goalAmount > 0 ? (doc.currentAmount / doc.goalAmount) * 100 : 0,
     };
   }
 
