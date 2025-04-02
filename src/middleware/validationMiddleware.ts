@@ -158,7 +158,7 @@ export const validateBudgetUpdate = (
 // Pot validation schema
 const potSchema = Joi.object({
   name: Joi.string().required().trim().max(100),
-  currentAmount: Joi.number().required().min(0),
+  currentAmount: Joi.number().optional().min(0),
   goalAmount: Joi.number().required().min(0),
   targetDate: Joi.date().required().greater("now"),
   theme: Joi.string()

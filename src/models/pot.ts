@@ -75,6 +75,9 @@ const PotSchema: Schema = new mongoose.Schema(
 
 // Add virtual field for progress with proper typing
 PotSchema.virtual("progress").get(function (this: IPot) {
+  if (this.goalAmount === 0) {
+    return 0; // Default progress to 0 if goalAmount is zero
+  }
   return Math.round((this.currentAmount / this.goalAmount) * 100);
 });
 

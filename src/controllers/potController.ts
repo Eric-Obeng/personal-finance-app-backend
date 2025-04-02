@@ -187,9 +187,10 @@ export const updatePotBalance = async (
       return;
     }
 
+    const operationPastTense = operation === "add" ? "added" : "withdrew";
     res.status(200).json({
       success: true,
-      message: `Successfully ${operation}n ${amount} from pot`,
+      message: `Successfully ${operationPastTense} ${amount} from pot`,
       data: pot,
     });
   } catch (error: any) {

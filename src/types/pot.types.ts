@@ -12,6 +12,7 @@ export interface UpdatePotDto {
   name?: string;
   goalAmount?: number;
   targetDate?: Date;
+  theme?: string;
   description?: string;
   category?: string;
   metadata?: Record<string, any>;
