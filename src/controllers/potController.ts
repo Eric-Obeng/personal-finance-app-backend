@@ -146,29 +146,57 @@ export const updatePotBalance = async (
   try {
     const userId = req.user?.id;
     if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
+      res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
       return;
     }
 
-    const { amount } = req.body;
-    if (typeof amount !== "number") {
-      res.status(400).json({ message: "Amount must be a number" });
+    const { amount, operation } = req.body;
+
+    if (typeof amount !== "number" || amount <= 0) {
+      res.status(400).json({
+        success: false,
+        message: "Amount must be a positive number",
+      });
       return;
     }
+
+    if (!["add", "withdraw"].includes(operation)) {
+      res.status(400).json({
+        success: false,
+        message: "Operation must be either 'add' or 'withdraw'",
+      });
+      return;
+    }
+
+    // Convert amount based on operation
+    const adjustedAmount = operation === "withdraw" ? -amount : amount;
 
     const pot = await potService.updatePotBalance(
       userId,
       req.params.id,
-      amount
+      adjustedAmount
     );
     if (!pot) {
-      res.status(404).json({ message: "Pot not found" });
+      res.status(404).json({
+        success: false,
+        message: "Pot not found",
+      });
       return;
     }
 
-    res.status(200).json({ pot });
-  } catch (error) {
+    res.status(200).json({
+      success: true,
+      message: `Successfully ${operation}n ${amount} from pot`,
+      data: pot,
+    });
+  } catch (error: any) {
     console.error("Error updating pot balance:", error);
-    res.status(500).json({ message: "Failed to update pot balance" });
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to update pot balance",
+    });
   }
 };

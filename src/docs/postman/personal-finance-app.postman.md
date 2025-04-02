@@ -185,8 +185,10 @@ Query Parameters:
 ```json
 {
   "name": "New Car",
+  "currentAmount": 1000,
   "goalAmount": 5000,
   "targetDate": "2024-12-31T00:00:00Z",
+  "theme": "#FF5733",
   "description": "Saving for a new car",
   "category": "Vehicle"
 }
@@ -234,7 +236,54 @@ Query Parameters:
 
 ```json
 {
-  "amount": 500 // Positive for adding, negative for withdrawing
+  "amount": 500,
+  "operation": "add" // or "withdraw"
+}
+```
+
+Example Responses:
+
+Add Money:
+
+```json
+{
+  "success": true,
+  "message": "Successfully added 500 to pot",
+  "data": {
+    "_id": "pot_id",
+    "name": "New Car",
+    "currentAmount": 1500,
+    "goalAmount": 5000,
+    "progress": 30
+    // ...other fields
+  }
+}
+```
+
+Withdraw Money:
+
+```json
+{
+  "success": true,
+  "message": "Successfully withdrawn 500 from pot",
+  "data": {
+    "_id": "pot_id",
+    "name": "New Car",
+    "currentAmount": 500,
+    "goalAmount": 5000,
+    "progress": 10
+    // ...other fields
+  }
+}
+```
+
+Error Response (Insufficient Funds):
+
+```json
+{
+  "success": false,
+  "message": "Insufficient funds in pot",
+  "currentAmount": 300
 }
 ```
 
@@ -249,12 +298,13 @@ Create/Update:
   "data": {
     "_id": "pot_id",
     "name": "New Car",
+    "currentAmount": 1000,
     "goalAmount": 5000,
-    "currentAmount": 0,
+    "theme": "#FF5733",
     "targetDate": "2024-12-31T00:00:00Z",
     "description": "Saving for a new car",
     "category": "Vehicle",
-    "progress": 0,
+    "progress": 20,
     "createdAt": "2024-03-20T10:00:00Z",
     "updatedAt": "2024-03-20T10:00:00Z"
   }
