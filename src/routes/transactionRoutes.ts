@@ -55,7 +55,7 @@ transactionRouter.get("/:id", getTransaction);
 transactionRouter.put(
   "/:id",
   validateTransactionUpdate,
-  validateBudgetOwnership,
+  validateBudgetOwnership, // Middleware ensures budgetId is validated only if provided
   checkBudgetLimit,
   updateTransaction
 );
