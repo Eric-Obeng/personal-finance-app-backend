@@ -4,7 +4,7 @@ export interface ICategory extends Document {
   name: string;
   description?: string;
   icon?: string;
-  theme: string; // changed from color to theme
+  theme: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -26,7 +26,6 @@ const CategorySchema: Schema = new mongoose.Schema(
       type: String,
     },
     theme: {
-      // replaced color with theme
       type: String,
       default: "#000000",
       validate: {
