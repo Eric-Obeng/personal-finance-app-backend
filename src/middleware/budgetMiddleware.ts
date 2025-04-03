@@ -21,9 +21,9 @@ export const validateBudgetOwnership = async (
 ): Promise<void> => {
   try {
     const userId = req.user?.id;
-    const budgetId = req.body.budgetId || req.params.id;
+    const budgetId = req.body.budgetId;
 
-    // Skip validation if budgetId is not provided in the request body
+    // Skip validation if no budgetId is provided in the request
     if (!budgetId) {
       return next();
     }
@@ -36,6 +36,7 @@ export const validateBudgetOwnership = async (
 
     next();
   } catch (error) {
+    console.error("Error validating budget ownership:", error);
     res.status(500).json({ message: "Error validating budget ownership" });
   }
 };
