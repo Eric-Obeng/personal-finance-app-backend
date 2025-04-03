@@ -2,14 +2,12 @@ import Joi from "joi";
 
 export const transactionValidation = {
   create: Joi.object({
-    // ...existing code...
     name: Joi.string().required(),
-    // ...existing code...
+    category: Joi.string().required().trim(), // Allow any string
   }),
 
   update: Joi.object({
-    // ...existing code...
     name: Joi.string(),
-    // ...existing code...
+    category: Joi.string().trim(), // Allow any string
   }),
 };

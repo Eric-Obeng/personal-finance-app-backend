@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import budgetService from "../services/budget.service";
+import categoryService from "../services/category.service";
 import {
   CreateBudgetDto,
   UpdateBudgetDto,
@@ -26,7 +27,7 @@ export const createBudget = async (
     }
 
     // Validate required fields
-    const { category, amount } = req.body;
+    const { category, amount, ...budgetData } = req.body;
     if (!category) {
       res.status(400).json({
         success: false,
@@ -42,8 +43,20 @@ export const createBudget = async (
       return;
     }
 
-    const budgetData: CreateBudgetDto = req.body;
-    const budget = await budgetService.createBudget(userId, budgetData);
+    // Check if category exists, if not create it
+    const categories = await categoryService.getCategoryNames();
+    if (!categories.includes(category)) {
+      await categoryService.createCategory({
+        name: category,
+        theme: budgetData.theme || "#000000",
+        description: `Category created from budget by user ${userId}`,
+      });
+    }
+
+    const budget = await budgetService.createBudget(userId, {
+      category,
+      ...budgetData,
+    });
 
     res.status(201).json({
       success: true,
@@ -62,7 +75,10 @@ export const createBudget = async (
       return;
     }
 
-    if (error instanceof Error && error.message.includes("Invalid budget data")) {
+    if (
+      error instanceof Error &&
+      error.message.includes("Invalid budget data")
+    ) {
       res.status(400).json({
         success: false,
         message: error.message,
@@ -73,7 +89,8 @@ export const createBudget = async (
     res.status(500).json({
       success: false,
       message: "Unable to create budget. Please try again later.",
-      error: error instanceof Error ? error.message : "An unknown error occurred",
+      error:
+        error instanceof Error ? error.message : "An unknown error occurred",
     });
   }
 };
