@@ -58,7 +58,7 @@ transactionRouter.post(
 transactionRouter
   .route("/:id")
   .get(getTransaction)
-  .put(validateTransactionUpdate, validateBudgetOwnership, updateTransaction)
+  .put(validateTransactionUpdate, validateBudgetOwnership, checkBudgetLimit, updateTransaction)
   .delete(deleteTransaction);
 
 // Restore a soft-deleted transaction
