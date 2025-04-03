@@ -27,8 +27,6 @@ const upload = multer({ dest: "public/uploads/avatars/" });
 
 // All transaction routes require authentication
 transactionRouter.use(protect);
-
-// Apply rate limiting and budget validation to transaction routes
 transactionRouter.use(budgetLimiter);
 
 // Upload transaction avatar
@@ -37,6 +35,15 @@ transactionRouter.post(
   upload.single("avatar"),
   uploadTransactionAvatar
 );
+
+// Get transaction overview - Move before /:id routes
+transactionRouter.get("/overview", getTransactionOverview);
+
+// Get transaction analytics - Move before /:id routes
+transactionRouter.get("/analytics", getTransactionAnalytics);
+
+// Get all transactions with filtering and pagination
+transactionRouter.get("/", getAllTransactions);
 
 // Create transaction with budget validation
 transactionRouter.post(
@@ -47,28 +54,12 @@ transactionRouter.post(
   createTransaction
 );
 
-// Get all transactions with filtering and pagination
-transactionRouter.get("/", getAllTransactions);
-
-// Get, update, delete transaction by ID
-transactionRouter.get("/:id", getTransaction);
-
-// Get transaction overview
-transactionRouter.get("/overview", getTransactionOverview);
-
-// Get transaction analytics
-transactionRouter.get("/analytics", getTransactionAnalytics);
-
-// Update transaction with budget validation
-transactionRouter.put(
-  "/:id",
-  validateTransactionUpdate,
-  validateBudgetOwnership, // Middleware ensures budgetId is validated only if provided
-  checkBudgetLimit,
-  updateTransaction
-);
-
-transactionRouter.delete("/:id", deleteTransaction);
+// Individual transaction routes
+transactionRouter
+  .route("/:id")
+  .get(getTransaction)
+  .put(validateTransactionUpdate, validateBudgetOwnership, checkBudgetLimit, updateTransaction)
+  .delete(deleteTransaction);
 
 // Restore a soft-deleted transaction
 transactionRouter.patch("/:id/restore", restoreTransaction);
