@@ -85,11 +85,19 @@ export const createTransaction = async (
     const categories = await categoryService.getCategoryNames();
 
     if (!categories.includes(category)) {
-      await categoryService.createCategory({
-        name: category,
-        theme: "#000000", // Default theme
-        description: `Category created from transaction by user ${userId}`,
-      });
+      try {
+        await categoryService.createCategory({
+          name: category,
+          theme: "#000000", // Default theme
+          description: `Category created from transaction by user ${userId}`,
+        });
+      } catch (error: any) {
+        if (error.code === "ER_DUP_ENTRY" || error.code === 11000) {
+          console.warn(`Category "${category}" already exists. Skipping creation.`);
+        } else {
+          throw error;
+        }
+      }
     }
 
     const transaction = await transactionService.createTransaction(userId, {
