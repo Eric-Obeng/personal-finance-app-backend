@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import budgetService from "../services/budget.service";
 import rateLimit from "express-rate-limit";
+import mongoose from "mongoose";
 
 interface AuthenticatedRequest extends Request {
   user?: { id: string };
@@ -28,8 +29,17 @@ export const validateBudgetOwnership = async (
       return next();
     }
 
+    // Validate if budgetId is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(budgetId)) {
+      res.status(400).json({ message: "Invalid budget ID format" });
+      return;
+    }
+
     const budget = await budgetService.getBudgetById(userId!, budgetId);
     if (!budget) {
+      console.log(
+        `Budget not found - userId: ${userId}, budgetId: ${budgetId}`
+      );
       res.status(404).json({ message: "Budget not found or unauthorized" });
       return;
     }
@@ -37,11 +47,14 @@ export const validateBudgetOwnership = async (
     next();
   } catch (error) {
     console.error("Error validating budget ownership:", error);
-    res.status(500).json({ message: "Error validating budget ownership" });
+    res.status(500).json({
+      message: "Error validating budget ownership",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
 
-// Check budget limit before transaction creation/update
+// Check budget limit with improved validation
 export const checkBudgetLimit = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -52,7 +65,12 @@ export const checkBudgetLimit = async (
     const { budgetId, amount, type } = req.body;
 
     if (!budgetId || type !== "expense") {
-      next();
+      return next();
+    }
+
+    // Validate if budgetId is a valid MongoDB ObjectId
+    if (budgetId && !mongoose.Types.ObjectId.isValid(budgetId)) {
+      res.status(400).json({ message: "Invalid budget ID format" });
       return;
     }
 
@@ -74,6 +92,10 @@ export const checkBudgetLimit = async (
 
     next();
   } catch (error) {
-    res.status(500).json({ message: "Error checking budget limit" });
+    console.error("Error checking budget limit:", error);
+    res.status(500).json({
+      message: "Error checking budget limit",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
