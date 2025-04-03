@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import transactionService from "../services/transaction.service";
 import budgetService from "../services/budget.service";
 import notificationService from "../services/notification.service";
+import categoryService from "../services/category.service";
 import {
   CreateTransactionDto,
   UpdateTransactionDto,
@@ -79,11 +80,30 @@ export const createTransaction = async (
       return;
     }
 
-    const transactionData: CreateTransactionDto = req.body;
-    const transaction = await transactionService.createTransaction(
-      userId,
-      transactionData
-    );
+    // Check if category exists, if not create it
+    const { category, ...transactionData } = req.body;
+    const categories = await categoryService.getCategoryNames();
+
+    if (!categories.includes(category)) {
+      try {
+        await categoryService.createCategory({
+          name: category,
+          theme: "#000000", // Default theme
+          description: `Category created from transaction by user ${userId}`,
+        });
+      } catch (error: any) {
+        if (error.code === "ER_DUP_ENTRY" || error.code === 11000) {
+          console.warn(`Category "${category}" already exists. Skipping creation.`);
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    const transaction = await transactionService.createTransaction(userId, {
+      category,
+      ...transactionData,
+    });
 
     // Notify if budget is near limit
     if (transaction.budgetId && transaction.type === "expense") {

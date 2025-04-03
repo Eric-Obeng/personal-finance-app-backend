@@ -11,6 +11,7 @@ import notificationRoute from "./src/routes/notificationRoutes";
 import potsRoute from "./src/routes/potRoutes";
 import accountRoute from "./src/routes/accountRoutes";
 import recurringBillRoute from "./src/routes/recurringBillRoutes";
+import categoryRoute from "./src/routes/categoryRoutes";
 import { errorHandler } from "./src/middleware/errorHandler";
 import recurringTransactionWorker from "./src/workers/recurringTransactionWorker";
 import helmet from "helmet";
@@ -46,6 +47,7 @@ app.use("/api/v1/notifications", notificationRoute);
 app.use("/api/v1/pots", potsRoute);
 app.use("/api/v1/account", accountRoute);
 app.use("/api/v1/recurring-bills", recurringBillRoute);
+app.use("/api/v1/categories", categoryRoute);
 
 app.get("/", async (req: Request, res: Response, next: NextFunction) => {
   res.send({ message: "Awesome it works 🐻" });

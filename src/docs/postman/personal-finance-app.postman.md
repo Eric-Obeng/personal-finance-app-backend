@@ -6,7 +6,7 @@ First, set up these environment variables in Postman:
 
 ```json
 {
-  "base_url": "http://localhost:8080",
+  "base_url": "http://localhost:5000",
   "token": ""
 }
 ```
@@ -36,17 +36,16 @@ First, set up these environment variables in Postman:
 }
 ```
 
-After successful login, copy the token and set it to your environment variable:
-
-```javascript
-pm.environment.set("token", pm.response.json().token);
-```
-
 ### 3. Get User Profile
 
 - **GET** `{{base_url}}/api/v1/auth/profile`
+- **Headers**: `Authorization: Bearer {{token}}`
 
-### 4. Forgot Password
+### 4. Email Verification
+
+- **GET** `{{base_url}}/api/v1/auth/verify-email/:token`
+
+### 5. Forgot Password
 
 - **POST** `{{base_url}}/api/v1/auth/forgot-password`
 
@@ -56,7 +55,7 @@ pm.environment.set("token", pm.response.json().token);
 }
 ```
 
-### 5. Reset Password
+### 6. Reset Password
 
 - **POST** `{{base_url}}/api/v1/auth/reset-password/:token`
 
@@ -66,27 +65,12 @@ pm.environment.set("token", pm.response.json().token);
 }
 ```
 
-### 6. Verify Email
-
-- **GET** `{{base_url}}/api/v1/auth/verify-email/:token`
-
-### 7. Get All Users
-
-- **GET** `{{base_url}}/api/v1/auth/users`
-
----
-
 ## Transaction Endpoints
-
-Add this authorization header to all requests:
-
-```
-Authorization: Bearer {{token}}
-```
 
 ### 1. Create Transaction
 
 - **POST** `{{base_url}}/api/v1/transactions`
+- **Headers**: `Authorization: Bearer {{token}}`
 
 ```json
 {
@@ -104,115 +88,136 @@ Authorization: Bearer {{token}}
 ### 2. Get All Transactions
 
 - **GET** `{{base_url}}/api/v1/transactions`
+- **Headers**: `Authorization: Bearer {{token}}`
 
 Query Parameters:
 
-```
-?page=0
-&limit=10
-&startDate=2024-01-01
-&endDate=2024-12-31
-&category=Food
-&type=expense
-&minAmount=10
-&maxAmount=100
-&search=grocery
-```
+- `page`: Page number (default: 1)
+- `limit`: Items per page (default: 10)
+- `startDate`: Filter by start date (YYYY-MM-DD)
+- `endDate`: Filter by end date (YYYY-MM-DD)
+- `category`: Filter by category
+- `type`: Filter by type (income/expense)
+- `minAmount`: Minimum amount
+- `maxAmount`: Maximum amount
+- `search`: Search in name/description
+- `recurring`: Filter recurring transactions (true/false)
 
-### 3. Get Single Transaction
+### 3. Get Transaction Analytics
 
-- **GET** `{{base_url}}/api/v1/transactions/:id`
+- **GET** `{{base_url}}/api/v1/transactions/analytics`
+- **Headers**: `Authorization: Bearer {{token}}`
 
-### 4. Update Transaction
+Query Parameters:
+
+- `dateRange`: last7days, last30days, thisMonth
+
+### 4. Get Transaction Overview
+
+- **GET** `{{base_url}}/api/v1/transactions/overview`
+- **Headers**: `Authorization: Bearer {{token}}`
+
+Query Parameters:
+
+- `limit`: Number of transactions to return
+- `sort`: latest/oldest
+
+### 5. Upload Transaction Avatar
+
+- **POST** `{{base_url}}/api/v1/transactions/upload-avatar`
+- **Headers**: `Authorization: Bearer {{token}}`
+- **Body**: Form-data with key 'avatar' and file value
+
+### 6. Update Transaction
 
 - **PUT** `{{base_url}}/api/v1/transactions/:id`
+- **Headers**: `Authorization: Bearer {{token}}`
 
 ```json
 {
-  "amount": 55.99,
-  "description": "Updated description"
+  "name": "Updated Transaction",
+  "amount": 75.5,
+  "category": "Food"
 }
 ```
 
-### 5. Delete Transaction
+### 7. Delete Transaction
 
 - **DELETE** `{{base_url}}/api/v1/transactions/:id`
+- **Headers**: `Authorization: Bearer {{token}}`
 
-### 6. Restore Transaction
+### 8. Restore Transaction
 
 - **PATCH** `{{base_url}}/api/v1/transactions/:id/restore`
+- **Headers**: `Authorization: Bearer {{token}}`
 
-### 7. Upload Transaction Avatar
+## Category Endpoints
 
-- **POST** `{{base_url}}/api/v1/transactions/upload-avatar`
-  Form Data:
+### 1. Create Category
 
+- **POST** `{{base_url}}/api/v1/categories`
+- **Headers**: `Authorization: Bearer {{token}}`
+
+```json
+{
+  "name": "Entertainment",
+  "description": "Entertainment expenses",
+  "theme": "#FF5733",
+  "icon": "🎮"
+}
 ```
-avatar: [Select File]
-```
 
-### 8. Get Transaction Overview
+### 2. Get All Categories
 
-- **GET** `{{base_url}}/api/v1/transactions/overview`
+- **GET** `{{base_url}}/api/v1/categories`
+- **Headers**: `Authorization: Bearer {{token}}`
 
 Query Parameters:
 
-```
-?limit=5
-&sort=latest
-```
-
-### 9. Get Transaction Analytics
-
-- **GET** `{{base_url}}/api/v1/transactions/analytics`
-
-Query Parameters:
-
-```
-?dateRange=last30days
-```
-
----
+- `activeOnly`: Filter active categories (true/false)
 
 ## Budget Endpoints
 
 ### 1. Create Budget
 
 - **POST** `{{base_url}}/api/v1/budgets`
+- **Headers**: `Authorization: Bearer {{token}}`
 
 ```json
 {
   "category": "Food",
   "amount": 500,
   "period": "monthly",
-  "theme": "#FF5733"
+  "theme": "#FF5733",
+  "startDate": "2024-03-01T00:00:00Z"
 }
 ```
 
 ### 2. Get All Budgets
 
 - **GET** `{{base_url}}/api/v1/budgets`
+- **Headers**: `Authorization: Bearer {{token}}`
 
 Query Parameters:
 
-```
-?page=0
-&limit=10
-&category=Food
-&period=monthly
-&isActive=true
-&minAmount=100
-&maxAmount=1000
-&search=grocery
-```
+- `page`: Page number
+- `limit`: Items per page
+- `category`: Filter by category
+- `period`: monthly/quarterly/yearly
+- `isActive`: true/false
+- `minAmount`: Minimum amount
+- `maxAmount`: Maximum amount
+- `search`: Search term
 
-### 3. Get Single Budget
+### 3. Get Budget Utilization
 
-- **GET** `{{base_url}}/api/v1/budgets/:id`
+- **GET** `{{base_url}}/api/v1/budgets/:id/utilization`
+- **Headers**: `Authorization: Bearer {{token}}`
 
 ### 4. Update Budget
 
 - **PUT** `{{base_url}}/api/v1/budgets/:id`
+- **Headers**: `Authorization: Bearer {{token}}`
 
 ```json
 {
@@ -224,141 +229,65 @@ Query Parameters:
 ### 5. Delete Budget
 
 - **DELETE** `{{base_url}}/api/v1/budgets/:id`
-
-### 6. Get Budget by Category
-
-- **GET** `{{base_url}}/api/v1/budgets/category/:category`
-
-### 7. Get Budget Utilization
-
-- **GET** `{{base_url}}/api/v1/budgets/:id/utilization`
-
----
+- **Headers**: `Authorization: Bearer {{token}}`
 
 ## Savings Pot Endpoints
 
 ### 1. Create Savings Pot
 
 - **POST** `{{base_url}}/api/v1/pots`
+- **Headers**: `Authorization: Bearer {{token}}`
 
 ```json
 {
   "name": "New Car",
-  "currentAmount": 1000,
   "goalAmount": 5000,
   "targetDate": "2024-12-31T00:00:00Z",
   "theme": "#FF5733",
-  "description": "Saving for a new car",
-  "category": "Vehicle"
+  "description": "Saving for a new car"
 }
 ```
 
-### 2. Get All Savings Pots
+### 2. Get All Pots
 
 - **GET** `{{base_url}}/api/v1/pots`
+- **Headers**: `Authorization: Bearer {{token}}`
 
-Query Parameters:
-
-```
-?search=car
-&category=Vehicle
-&minGoalAmount=1000
-&maxGoalAmount=10000
-&targetDateBefore=2024-12-31
-&targetDateAfter=2024-01-01
-```
-
-### 3. Get Single Pot
-
-- **GET** `{{base_url}}/api/v1/pots/:id`
-
-### 4. Update Pot
-
-- **PUT** `{{base_url}}/api/v1/pots/:id`
-
-```json
-{
-  "name": "Updated Car Fund",
-  "goalAmount": 6000,
-  "targetDate": "2025-01-31T00:00:00Z",
-  "description": "Updated saving goal for a better car"
-}
-```
-
-### 5. Delete Pot
-
-- **DELETE** `{{base_url}}/api/v1/pots/:id`
-
-### 6. Update Pot Balance
+### 3. Update Pot Balance
 
 - **PATCH** `{{base_url}}/api/v1/pots/:id/balance`
+- **Headers**: `Authorization: Bearer {{token}}`
 
 ```json
 {
   "amount": 500,
-  "operation": "add" // or "withdraw"
+  "operation": "add"
 }
 ```
 
----
-
-## Notification Endpoints
-
-### 1. Get All Notifications
-
-- **GET** `{{base_url}}/api/v1/notifications`
-
-Query Parameters:
-
-```
-?limit=20
-```
-
-### 2. Mark Notification as Read
-
-- **PATCH** `{{base_url}}/api/v1/notifications/:id/read`
-
-### 3. Mark All Notifications as Read
-
-- **PATCH** `{{base_url}}/api/v1/notifications/read-all`
-
----
-
-## Recurring Bill Endpoints
-
-### 1. Get Recurring Bills Summary
-
-- **GET** `{{base_url}}/api/v1/recurring-bills/summary`
-
----
-
-## Account Endpoints
+## Account Overview Endpoints
 
 ### 1. Get Account Summary
 
 - **GET** `{{base_url}}/api/v1/account/account-summary`
+- **Headers**: `Authorization: Bearer {{token}}`
 
-### 2. Get Savings Pots Overview
-
-- **GET** `{{base_url}}/api/v1/account/savings-pots`
-
-### 3. Get Budget Overview
+### 2. Get Budget Overview
 
 - **GET** `{{base_url}}/api/v1/account/budgets`
+- **Headers**: `Authorization: Bearer {{token}}`
 
----
+### 3. Get Savings Pots Overview
 
-## Testing Flow
+- **GET** `{{base_url}}/api/v1/account/savings-pots`
+- **Headers**: `Authorization: Bearer {{token}}`
 
-1. Register a new user
-2. Login and save the token
-3. Create a budget
-4. Create transactions
-5. Test filtering and pagination
-6. Update transactions and budgets
-7. Check budget utilization
-8. Test deletion and restoration
-9. Test recurring bills and notifications
+## Recurring Bills Endpoints
+
+### 1. Get Recurring Bills Summary
+
+- **GET** `{{base_url}}/api/v1/recurring-bills/summary`
+- **Headers**: `Authorization: Bearer {{token}}`
 
 ## Common Response Codes
 
@@ -366,13 +295,40 @@ Query Parameters:
 - 201: Created
 - 400: Bad Request
 - 401: Unauthorized
+- 403: Forbidden
 - 404: Not Found
+- 429: Too Many Requests
 - 500: Server Error
 
-## Tips
+## Best Practices
 
-1. Always verify the token is set in your environment
-2. Test with invalid data to ensure validation works
-3. Test pagination starting from page=0
-4. Save transaction and budget IDs for later use
-5. Test date ranges and filtering extensively
+1. Always include the Authorization header for protected routes
+2. Use appropriate HTTP methods for each operation
+3. Include error handling in your requests
+4. Test with different scenarios (valid/invalid data)
+5. Monitor rate limits
+6. Validate responses against expected schemas
+
+## Testing Workflow
+
+1. Register a new user
+2. Login and save the token
+3. Create categories for transactions
+4. Create budgets for different categories
+5. Create transactions
+6. Test filtering and pagination
+7. Create savings pots
+8. Test account overview features
+9. Test recurring bills functionality
+10. Verify notifications are working
+
+## Rate Limits
+
+- Auth endpoints: 5 requests per 15 minutes
+- Transaction endpoints: 100 requests per 15 minutes
+- Budget endpoints: 100 requests per 15 minutes
+- Other endpoints: 50 requests per 15 minutes
+
+---
+
+© 2024 Personal Finance App. All Rights Reserved.
