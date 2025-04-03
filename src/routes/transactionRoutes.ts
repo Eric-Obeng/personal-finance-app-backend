@@ -1,4 +1,4 @@
-import express, { Router } from "express";
+import express, { Router, Request, Response, NextFunction } from "express";
 import {
   createTransaction,
   getTransaction,
@@ -21,6 +21,10 @@ import {
   checkBudgetLimit,
   budgetLimiter,
 } from "../middleware/budgetMiddleware";
+
+interface AuthenticatedRequest extends Request {
+  user?: { id: string };
+}
 
 const transactionRouter: Router = express.Router();
 const upload = multer({ dest: "public/uploads/avatars/" });
@@ -58,7 +62,16 @@ transactionRouter.post(
 transactionRouter
   .route("/:id")
   .get(getTransaction)
-  .put(validateTransactionUpdate, validateBudgetOwnership, checkBudgetLimit, updateTransaction)
+  .put([
+    validateTransactionUpdate,
+    (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+      console.log("Update payload:", req.body); // Debug logging
+      next();
+    },
+    validateBudgetOwnership,
+    checkBudgetLimit,
+    updateTransaction,
+  ])
   .delete(deleteTransaction);
 
 // Restore a soft-deleted transaction

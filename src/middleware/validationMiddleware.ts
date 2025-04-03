@@ -5,6 +5,11 @@ import {
   RecurringFrequency,
 } from "../types/transaction.types";
 
+// Add interface for Request with user
+interface AuthenticatedRequest extends Request {
+  user?: { id: string };
+}
+
 // Transaction validation schema
 const transactionSchema = Joi.object({
   name: Joi.string().required().trim().max(100), // Ensure name is required and has a max length
@@ -49,44 +54,62 @@ export const validateTransaction = (
 
 // Validation schema for transaction update
 const updateTransactionSchema = Joi.object({
-  amount: Joi.number().optional().min(0),
+  name: Joi.string().trim().max(100).optional(),
+  amount: Joi.number().min(0).optional(),
   type: Joi.string().valid("income", "expense").optional(),
-  category: Joi.string().optional().trim().max(50),
-  description: Joi.string().optional().allow("").max(500),
+  category: Joi.string().trim().max(50).optional(),
+  description: Joi.string().allow("", null).max(500).optional(),
   date: Joi.date().optional(),
   recurring: Joi.boolean().optional(),
   recurringFrequency: Joi.string()
     .valid("daily", "weekly", "monthly", "yearly")
     .optional(),
   avatar: Joi.string()
-    .optional()
-    .allow("")
-    .pattern(/^\/uploads\/avatars\/.*$/),
-  budgetId: Joi.string().optional().allow(""),
-  potId: Joi.string().optional().allow(""),
+    .pattern(/^\/uploads\/avatars\/.*$/)
+    .allow("", null)
+    .optional(),
+  budgetId: Joi.string().allow("", null).optional(),
+  potId: Joi.string().allow("", null).optional(),
   tags: Joi.array().items(Joi.string().trim()).optional(),
   metadata: Joi.object().optional(),
-}).min(1); // At least one field must be provided for update
+}).min(1);
 
-// Validation middleware for transaction updates
 export const validateTransactionUpdate = (
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): void => {
-  const { error } = updateTransactionSchema.validate(req.body, {
-    abortEarly: false,
-  });
+  try {
+    const { error } = updateTransactionSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true, // Remove unknown fields
+      allowUnknown: true, // Allow unknown fields during validation
+    });
 
-  if (error) {
-    const errorMessage = error.details
-      .map((detail: Joi.ValidationErrorItem) => detail.message)
-      .join(", ");
-    res.status(400).json({ message: "Validation error", errors: errorMessage });
-    return;
+    if (error) {
+      const errorMessage = error.details
+        .map((detail: Joi.ValidationErrorItem) => detail.message)
+        .join(", ");
+      res.status(400).json({
+        message: "Validation error",
+        errors: errorMessage,
+        details: error.details,
+      });
+      return;
+    }
+
+    // Add debug logging
+    console.log("Validation passed for transaction update:", {
+      userId: req.user?.id,
+      transactionId: req.params.id,
+      updateData: req.body,
+    });
+
+    next();
+  } catch (err) {
+    console.error("Validation error:", err);
+    res.status(500).json({ message: "Server validation error" });
   }
-
-  next();
 };
 
 // Budget validation schema
