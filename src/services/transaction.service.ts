@@ -1,4 +1,5 @@
 import Transaction from "../models/transaction";
+import mongoose from "mongoose";
 import {
   CreateTransactionDto,
   UpdateTransactionDto,
@@ -124,13 +125,37 @@ class TransactionService {
     transactionId: string,
     updateData: UpdateTransactionDto
   ): Promise<TransactionResponse | null> {
-    const transaction = await Transaction.findOneAndUpdate(
-      { _id: transactionId, userId, isDeleted: false },
-      { $set: updateData },
-      { new: true }
-    );
+    try {
+      if (!mongoose.Types.ObjectId.isValid(transactionId)) {
+        console.log(`Invalid transaction ID format: ${transactionId}`);
+        return null;
+      }
 
-    return transaction ? this.transformTransaction(transaction) : null;
+      const transaction = await Transaction.findOneAndUpdate(
+        {
+          _id: transactionId,
+          userId,
+          isDeleted: false,
+        },
+        { $set: updateData },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
+      if (!transaction) {
+        console.log(
+          `Transaction not found - userId: ${userId}, transactionId: ${transactionId}`
+        );
+        return null;
+      }
+
+      return this.transformTransaction(transaction);
+    } catch (error) {
+      console.error("Error updating transaction:", error);
+      throw error;
+    }
   }
 
   /**
