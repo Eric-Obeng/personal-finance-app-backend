@@ -25,6 +25,22 @@ app.use(express.urlencoded({ extended: false }));
 // Set security headers
 app.use(helmet());
 app.use(morgan("dev"));
+app.options("*", (req, res) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+  );
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.sendStatus(204);
+});
+
+app.use((req, res, next) => {
+  console.log("Incoming Request:", req.method, req.path);
+  console.log("Headers:", req.headers);
+  next();
+});
+
 app.use(
   cors({
     origin: (origin, callback) => {
