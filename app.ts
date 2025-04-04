@@ -27,12 +27,15 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://finance-ai-app-rho.vercel.app"],
+    origin: [
+      "http://localhost:3000", 
+      "https://finance-ai-app-rho.vercel.app",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
+    preflightContinue: false, // Do not pass the request to the next handler if preflight is successful
+    optionsSuccessStatus: 204, // Use 204 for successful preflight responses
   })
 );
 
